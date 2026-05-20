@@ -1,0 +1,10 @@
+pandas
+scikit-learn
+joblib
+sentence-transformers
+faiss-cpu
+fastapi
+uvicorn
+pydantic
+pytest
+httpx
