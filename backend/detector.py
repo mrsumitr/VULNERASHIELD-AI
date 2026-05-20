@@ -9,6 +9,7 @@ Persistence: model saved to model.pkl / vectorizer.pkl via joblib.
 """
 
 import os
+import urllib.parse
 import joblib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -61,7 +62,8 @@ classifier, vectorizer = _load_or_train()
 
 def analyze_payload(log_string: str) -> tuple[str, float]:
     """Return (label, confidence). Label is one of the ALL_LABELS constants."""
-    vec        = vectorizer.transform([log_string])
+    decoded    = urllib.parse.unquote(log_string)
+    vec        = vectorizer.transform([decoded])
     label      = classifier.predict(vec)[0]
     proba      = classifier.predict_proba(vec)[0]
     confidence = proba[list(classifier.classes_).index(label)]
