@@ -9,6 +9,8 @@ services:
       - ./backend/data:/app/data        # persist downloaded dataset
       - ./backend/model.pkl:/app/model.pkl
       - ./backend/vectorizer.pkl:/app/vectorizer.pkl
+      - ./backend/anomaly_model.pkl:/app/anomaly_model.pkl
+      - ./backend/anomaly_vectorizer.pkl:/app/anomaly_vectorizer.pkl
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

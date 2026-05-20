@@ -20,9 +20,10 @@ _CSV_URL  = (
     "/master/payload_full.csv"
 )
 
-# Cap per class so training stays fast. cmdi only has 89 rows in the dataset
-# so it will naturally be smaller; class_weight='balanced' corrects for it.
-_CAP  = 500
+# No effective cap — use all available examples per class.
+# cmdi only has 89 rows in the dataset so it will naturally be smaller;
+# class_weight='balanced' corrects for it.
+_CAP  = 999_999
 _SEED = 42
 
 # Map dataset labels → our internal label constants

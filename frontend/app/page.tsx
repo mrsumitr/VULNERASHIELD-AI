@@ -84,7 +84,11 @@ export default function Home() {
 
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    fetch(`${API}/health`).then(r => setOnline(r.ok)).catch(() => setOnline(false));
+    const check = () =>
+      fetch(`${API}/health`).then(r => { if (r.ok) setOnline(true); else setOnline(false); }).catch(() => setOnline(false));
+    check();
+    const id = setInterval(check, 3000);
+    return () => clearInterval(id);
   }, []);
 
   async function analyze() {
@@ -137,9 +141,9 @@ export default function Home() {
 
       {/* Stats */}
       <div className="border-b border-zinc-800 bg-zinc-900 px-6 py-2 flex gap-6 text-xs overflow-x-auto">
-        <span className="text-zinc-500">Accuracy <span className="text-zinc-200 font-mono">98.7%</span></span>
+        <span className="text-zinc-500">Accuracy <span className="text-zinc-200 font-mono">99.9%</span></span>
         <span className="text-zinc-500">CV Folds <span className="text-zinc-200 font-mono">5</span></span>
-        <span className="text-zinc-500">Training examples <span className="text-zinc-200 font-mono">1,968</span></span>
+        <span className="text-zinc-500">Training examples <span className="text-zinc-200 font-mono">~31K</span></span>
         <span className="text-zinc-500">Threat classes <span className="text-zinc-200 font-mono">6</span></span>
       </div>
 

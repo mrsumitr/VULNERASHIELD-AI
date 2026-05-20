@@ -1,6 +1,6 @@
 # VulneraShield AI
 
-Real-time HTTP threat detection system. Classifies raw HTTP log lines into 6 categories — safe, SQL injection, XSS, path traversal, command injection, and SSRF — using a TF-IDF + Logistic Regression model trained on ~1,968 labelled examples with **98.7% cross-validated accuracy**.
+Real-time HTTP threat detection system. Classifies raw HTTP log lines into 6 categories — safe, SQL injection, XSS, path traversal, command injection, and SSRF — using a TF-IDF + Logistic Regression model trained on ~31,156 labelled examples with **99.9% cross-validated accuracy**.
 
 ## Architecture
 
@@ -34,8 +34,8 @@ Logistic Regression (6-class, balanced weights)    +   Isolation Forest (anomaly
 | Anomaly detection | Isolation Forest (trained on safe logs only) |
 | RAG knowledge base | 35 entries — FAISS + `all-MiniLM-L6-v2` embeddings |
 | Training data | HttpParamsDataset (real) + synthetic supplement |
-| Examples | ~1,968 across 6 classes |
-| CV accuracy | **98.7%** (5-fold stratified) |
+| Examples | ~31,156 across 6 classes |
+| CV accuracy | **99.9%** (5-fold stratified) |
 | Persistence | `model.pkl` / `vectorizer.pkl` via joblib |
 
 **Why char n-grams?** Attack payloads contain distinctive character sequences (`'--`, `<script`, `../`, `; cat`, `169.254`) that char-level features capture better than word tokens — even when attackers URL-encode or obfuscate.
@@ -92,10 +92,10 @@ On first run the model trains automatically (~10 seconds) and is cached to `mode
 
 ```
 Training classifier …
-  1968 examples, 6 classes
+  31156 examples, 6 classes
   Model saved.
 Training anomaly detector (Isolation Forest)…
-  Anomaly detector trained on 515 safe examples.
+  Anomaly detector trained on 19319 safe examples.
 INFO:     Uvicorn running on http://127.0.0.1:8000
 ```
 
@@ -146,15 +146,15 @@ python3 evaluate.py --search   # + GridSearchCV hyperparameter tuning
 Sample output:
 
 ```
-Overall accuracy : 0.987  (98.7%)
+Overall accuracy : 0.999  (99.9%)
 
-              precision  recall  f1-score  support
-cmd_injection     0.978   0.928     0.952       97
-path_traversal    0.997   0.986     0.992      296
-safe              0.963   1.000     0.981      515
-sqli              0.998   0.990     0.994      512
-ssrf              0.975   0.975     0.975       40
-xss               1.000   0.984     0.992      508
+               precision  recall  f1-score   support
+cmd_injection      0.957   0.928     0.942        97
+path_traversal     1.000   0.990     0.995       296
+safe               0.998   1.000     0.999     19319
+sqli               1.000   0.998     0.999     10864
+ssrf               0.975   0.975     0.975        40
+xss                1.000   0.991     0.995       540
 ```
 
 ---
