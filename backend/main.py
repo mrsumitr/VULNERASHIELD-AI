@@ -6,8 +6,10 @@ from pydantic import BaseModel, field_validator
 
 import detector
 import patch_engine
+import anomaly_detector
+import dataset
 
-app = FastAPI(title="VulneraShield-AI", version="1.0.0")
+app = FastAPI(title="VulneraShield-AI", version="2.0.0")
 
 _ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
@@ -17,6 +19,10 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+# Load anomaly detector — trained on safe logs only
+_safe_logs = [log for log, lbl in zip(*dataset.load()) if lbl == "safe"]
+_anomaly_clf, _anomaly_vec = anomaly_detector.load_or_train(_safe_logs)
 
 
 class LogPayload(BaseModel):
@@ -50,15 +56,43 @@ async def health():
 async def analyze_log(payload: LogPayload):
     label, conf = detector.analyze_payload(payload.log_line)
 
+    # Run anomaly detection in parallel with classification
+    flagged, anomaly_score = anomaly_detector.is_anomalous(
+        payload.log_line, _anomaly_clf, _anomaly_vec
+    )
+
     base = {
         "threat_confidence": f"{conf:.1%}",
         "confidence_level": _confidence_level(conf),
+        "anomaly_flag": flagged,
+        "anomaly_score": anomaly_score,
     }
 
     if label == detector.SAFE:
+        # Safe by classifier but anomalous by Isolation Forest → possible zero-day
+        if flagged:
+            return {
+                **base,
+                "status": "SUSPICIOUS",
+                "threat_label": "unknown",
+                "remediation_brief": {
+                    "identified_threat": "Anomalous Request (Possible Zero-Day)",
+                    "mitigation_strategy": (
+                        "This request was classified as safe by the supervised model "
+                        "but flagged as statistically anomalous by the Isolation Forest detector. "
+                        "It may represent a novel attack pattern not seen during training. "
+                        "Review manually and consider adding it to the training set if malicious."
+                    ),
+                    "recommended_code_fix": (
+                        "# Log for manual review\n"
+                        "logger.warning('Anomalous request flagged: %s', log_line)\n"
+                        "# Block if in high-security mode, else alert and monitor"
+                    ),
+                },
+            }
         return {**base, "status": "SAFE", "threat_label": None, "remediation_brief": None}
 
-    brief = patch_engine.get_remediation_brief(label)
+    brief = patch_engine.get_remediation_brief(label, payload.log_line)
     return {
         **base,
         "status": "THREAT",

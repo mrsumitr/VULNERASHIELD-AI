@@ -17,26 +17,3 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-.dot-grid {
-  background-image: radial-gradient(circle, #3f3f46 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-@keyframes scan {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateY(400%); opacity: 0; }
-}
-.scan-line {
-  animation: scan 1.6s ease-in-out infinite;
-}
-
-@keyframes pulse-ring {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
-}
-.pulse-dot {
-  animation: pulse-ring 1.5s ease-in-out infinite;
-}
