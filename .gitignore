@@ -20,3 +20,10 @@ backend/*.pkl
 # Env files
 .env
 .env.*
+
+# Next.js
+frontend/.next/
+frontend/node_modules/
+
+# Dataset (downloaded automatically on first run)
+backend/data/
